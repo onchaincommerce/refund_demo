@@ -50,6 +50,8 @@ export default function AdminPortal() {
   const [charges, setCharges] = useState<CommerceCharge[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [processingChargeId, setProcessingChargeId] = useState<string | null>(null);
   const isMerchant = address?.toLowerCase() === MERCHANT_ADDRESS.toLowerCase();
 
   useEffect(() => {
@@ -99,8 +101,10 @@ export default function AdminPortal() {
 
   const handleRefund = async (chargeId: string) => {
     try {
+      setProcessingChargeId(chargeId);
       setIsLoading(true);
       setError(null);
+      setSuccessMessage(null);
       console.log('Processing refund for charge:', chargeId);
       
       const response = await fetch('/api/refund', {
@@ -117,6 +121,9 @@ export default function AdminPortal() {
       }
 
       if (data.success) {
+        setSuccessMessage(
+          `Refund processed successfully. Transaction: ${data.transactionHash}`
+        );
         // Refresh the charges list to show updated status
         await fetchCharges();
       }
@@ -126,6 +133,7 @@ export default function AdminPortal() {
       console.error('Error processing refund:', error);
     } finally {
       setIsLoading(false);
+      setProcessingChargeId(null);
     }
   };
 
@@ -210,6 +218,25 @@ export default function AdminPortal() {
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/>
               </svg>
               {error}
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="mb-6 p-4 bg-green-100 text-green-800 rounded-lg flex items-center gap-2">
+              <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+              </svg>
+              <div>
+                <div>{successMessage}</div>
+                <a
+                  href={`https://basescan.org/tx/${successMessage.split(': ')[1]}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-700 hover:text-green-900 underline text-sm mt-1 inline-block"
+                >
+                  View on BaseScan
+                </a>
+              </div>
             </div>
           )}
 
@@ -359,9 +386,9 @@ export default function AdminPortal() {
                               <button
                                 onClick={() => handleRefund(charge.id)}
                                 className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled={isLoading}
+                                disabled={isLoading || processingChargeId === charge.id}
                               >
-                                {isLoading ? (
+                                {processingChargeId === charge.id ? (
                                   <>
                                     <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
