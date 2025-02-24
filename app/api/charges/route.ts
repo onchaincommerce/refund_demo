@@ -92,30 +92,11 @@ async function getAllCharges(): Promise<CommerceCharge[]> {
 
 export async function GET() {
   try {
-    console.log('Fetching charges from Coinbase Commerce...');
-    const response = await fetch(`${COINBASE_COMMERCE_API}/charges`, {
-      headers: {
-        'X-CC-Api-Key': process.env.COINBASE_COMMERCE_API_KEY!,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Failed to fetch charges:', errorText);
-      throw new Error('Failed to fetch charges from Coinbase Commerce');
-    }
-
-    const data = await response.json();
-    console.log('Received charges:', {
-      total: data.data.length,
-      pagination: data.pagination,
-      sampleCharge: data.data[0] // Log first charge for debugging
-    });
-
+    console.log('Fetching all charges from Coinbase Commerce...');
+    const allCharges = await getAllCharges();
+    
     // Sort charges by date (newest first)
-    const sortedCharges = data.data.sort((a: CommerceCharge, b: CommerceCharge) => {
+    const sortedCharges = allCharges.sort((a: CommerceCharge, b: CommerceCharge) => {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 

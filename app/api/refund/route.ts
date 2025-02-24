@@ -14,9 +14,19 @@ export async function POST(request: Request) {
     const { chargeId } = await request.json();
     console.log('Processing refund for charge:', chargeId);
 
+    // Validate private key
     if (!process.env.PRIVATE_KEY) {
-      console.error('Missing private key');
-      return NextResponse.json({ error: 'Merchant configuration error' }, { status: 500 });
+      console.error('PRIVATE_KEY environment variable is not set');
+      return NextResponse.json({ 
+        error: 'Merchant configuration error: Missing PRIVATE_KEY environment variable' 
+      }, { status: 500 });
+    }
+
+    if (process.env.PRIVATE_KEY.length !== 64 && !process.env.PRIVATE_KEY.startsWith('0x')) {
+      console.error('PRIVATE_KEY environment variable is invalid');
+      return NextResponse.json({ 
+        error: 'Merchant configuration error: Invalid PRIVATE_KEY format' 
+      }, { status: 500 });
     }
 
     if (!chargeId) {
