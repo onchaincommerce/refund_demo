@@ -9,12 +9,16 @@ A demo application showcasing refund functionality with Coinbase Commerce and On
 - Customer refund requests
 - Admin refund processing
 - On-chain refund transactions
+- Webhook handling for payment events
 
 ## Environment Variables
 
 ```bash
 # Coinbase Commerce API Key
 COINBASE_COMMERCE_API_KEY=your_api_key
+
+# Coinbase Commerce Webhook Secret
+COINBASE_COMMERCE_WEBHOOK_SECRET=your_webhook_secret
 
 # Base Network RPC URL
 RPC_URL=your_base_rpc_url
@@ -61,6 +65,10 @@ After deployment, add your Vercel domain to Coinbase Commerce webhook settings:
 ```
 https://your-vercel-domain.com/api/webhook
 ```
+
+The webhook endpoint handles:
+- `charge:pending` - Marks charge as eligible for refund
+- More events can be added as needed
 
 ## Learn More
 
