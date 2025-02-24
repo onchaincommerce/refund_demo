@@ -101,6 +101,8 @@ export default function AdminPortal() {
     try {
       setIsLoading(true);
       setError(null);
+      console.log('Processing refund for charge:', chargeId);
+      
       const response = await fetch('/api/refund', {
         method: 'POST',
         headers: {
@@ -109,31 +111,18 @@ export default function AdminPortal() {
         body: JSON.stringify({ chargeId }),
       });
 
+      const data = await response.json();
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to process refund');
+        throw new Error(data.error || 'Failed to process refund');
       }
 
-      const data = await response.json();
       if (data.success) {
-        // Update the local state to mark the charge as refund requested
-        setCharges(prevCharges => 
-          prevCharges.map(charge => 
-            charge.id === chargeId 
-              ? {
-                  ...charge,
-                  metadata: {
-                    ...charge.metadata,
-                    refund_requested: true,
-                    refund_request_date: new Date().toISOString()
-                  }
-                }
-              : charge
-          )
-        );
+        // Refresh the charges list to show updated status
+        await fetchCharges();
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Error processing refund. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Error processing refund';
+      setError(`Refund failed: ${errorMessage}`);
       console.error('Error processing refund:', error);
     } finally {
       setIsLoading(false);
