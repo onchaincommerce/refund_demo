@@ -11,6 +11,13 @@ const USDC_ABI = [
 
 export async function POST(request: Request) {
   try {
+    // Debug logging for environment variables
+    console.log('Environment check:', {
+      hasPrivateKey: !!process.env.PRIVATE_KEY,
+      privateKeyLength: process.env.PRIVATE_KEY?.length,
+      hasCoinbaseKey: !!process.env.COINBASE_COMMERCE_API_KEY
+    });
+
     const { chargeId } = await request.json();
     console.log('Processing refund for charge:', chargeId);
 

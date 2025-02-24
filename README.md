@@ -24,7 +24,7 @@ COINBASE_COMMERCE_WEBHOOK_SECRET=your_webhook_secret
 RPC_URL=your_base_rpc_url
 
 # Merchant wallet for processing refunds
-MERCHANT_PRIVATE_KEY=your_private_key
+PRIVATE_KEY=your_private_key
 NEXT_PUBLIC_MERCHANT_ADDRESS=your_public_address
 ```
 
