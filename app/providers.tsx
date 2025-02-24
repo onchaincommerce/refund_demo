@@ -3,6 +3,7 @@
 import { base } from 'wagmi/chains';
 import { OnchainKitProvider } from '@coinbase/onchainkit';
 import type { ReactNode } from 'react';
+import { ToastProvider } from './components/ToastContext';
 
 export function Providers(props: { children: ReactNode }) {
   return (
@@ -17,7 +18,9 @@ export function Providers(props: { children: ReactNode }) {
         }
       }}
     >
-      {props.children}
+      <ToastProvider>
+        {props.children}
+      </ToastProvider>
     </OnchainKitProvider>
   );
 }

@@ -4,6 +4,9 @@ import crypto from 'crypto';
 const COINBASE_COMMERCE_API = 'https://api.commerce.coinbase.com';
 const WEBHOOK_SECRET = process.env.COINBASE_COMMERCE_WEBHOOK_SECRET!;
 
+// Store pending payments in memory (in a real app, use Redis or a database)
+export const pendingPayments = new Set<string>();
+
 function verifySignature(payload: string, signature: string): boolean {
   try {
     const hmac = crypto.createHmac('sha256', WEBHOOK_SECRET);
@@ -41,6 +44,9 @@ export async function POST(request: Request) {
     // Handle charge:pending event
     if (event.event.type === 'charge:pending') {
       const charge = event.event.data;
+      
+      // Add to our pending payments set
+      pendingPayments.add(charge.id);
       
       // Update charge metadata to indicate it's eligible for refund
       const updateResponse = await fetch(`${COINBASE_COMMERCE_API}/charges/${charge.id}`, {
