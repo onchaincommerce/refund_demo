@@ -30,7 +30,50 @@ export default function ProductPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
+      {/* Background animation */}
+      <div className="absolute inset-0 z-0 opacity-30">
+        <motion.div 
+          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-blue-500 filter blur-3xl"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            x: [0, 50, 0],
+            y: [0, 30, 0],
+          }}
+          transition={{ 
+            duration: 15,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-purple-500 filter blur-3xl"
+          animate={{ 
+            scale: [1, 1.3, 1],
+            x: [0, -40, 0],
+            y: [0, 40, 0],
+          }}
+          transition={{ 
+            duration: 18,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }}
+        />
+        <motion.div 
+          className="absolute top-2/3 right-1/3 w-72 h-72 rounded-full bg-teal-500 filter blur-3xl"
+          animate={{ 
+            scale: [1, 1.4, 1],
+            x: [0, 60, 0],
+            y: [0, -30, 0],
+          }}
+          transition={{ 
+            duration: 20,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }}
+        />
+      </div>
+
       {showConfetti && <Confetti />}
       
       <header className="p-4 border-b dark:border-gray-700 sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-10">
@@ -64,19 +107,15 @@ export default function ProductPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-12">
+      <main className="max-w-7xl mx-auto px-4 py-12 relative z-1">
         <div className="text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            className="flex justify-center"
           >
-            <h1 className="text-4xl font-bold dark:text-white mb-4">OCK Mug</h1>
-            <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-              Elevate your coffee experience with our premium matte black OCK mug. Perfect for your morning brew or late-night coding sessions.
-            </p>
-            
-            <div className="max-w-md mx-auto">
+            <div className="max-w-md">
               <ProductCard 
                 image="/ock-mug.png"
                 name="OCK Mug"
@@ -91,7 +130,7 @@ export default function ProductPage() {
         </div>
       </main>
       
-      <footer className="py-8 border-t dark:border-gray-700">
+      <footer className="py-8 border-t dark:border-gray-700 relative z-1">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-gray-600 dark:text-gray-300">
             &copy; {new Date().getFullYear()} OnchainKit Store. All rights reserved.
