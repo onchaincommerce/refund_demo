@@ -3,24 +3,30 @@
 import { WalletIsland } from '@coinbase/onchainkit/wallet';
 import { Checkout, CheckoutButton } from '@coinbase/onchainkit/checkout';
 import { useAccount } from 'wagmi';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { ProductCard } from './components/ProductCard';
 import { Confetti } from './components/Confetti';
-import { useToast } from './components/ToastContext';
 
 export default function ProductPage() {
   const { address } = useAccount();
   const [showConfetti, setShowConfetti] = useState(false);
-  const { showToast } = useToast();
 
-  // Function to handle successful payment
-  const handlePaymentSuccess = () => {
+  // Show confetti when page first loads
+  useEffect(() => {
     setShowConfetti(true);
-    showToast('Payment successful! Thank you for your purchase.', 'success');
-    setTimeout(() => setShowConfetti(false), 5000);
+    const timer = setTimeout(() => {
+      setShowConfetti(false);
+    }, 5000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Function to handle successful payment - now empty
+  const handlePaymentSuccess = () => {
+    // No action needed
   };
 
   return (
@@ -58,7 +64,7 @@ export default function ProductPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-16">
+      <main className="max-w-7xl mx-auto px-4 py-12">
         <div className="text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -66,7 +72,7 @@ export default function ProductPage() {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-4xl font-bold dark:text-white mb-4">OCK Mug</h1>
-            <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
               Elevate your coffee experience with our premium matte black OCK mug. Perfect for your morning brew or late-night coding sessions.
             </p>
             
