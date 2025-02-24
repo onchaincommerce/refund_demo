@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
 import { useEffect, useState, useCallback } from 'react';
+import Image from 'next/image';
 
 interface Charge {
   id: string;
@@ -94,11 +95,21 @@ export default function ProductPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-4xl font-bold dark:text-white mb-4">Premium Product</h1>
+            <h1 className="text-4xl font-bold dark:text-white mb-4">OCK Mug</h1>
             <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-              Experience the future of digital commerce with our premium product. Secure, fast, and powered by blockchain technology.
+              Elevate your coffee experience with our premium matte black OCK mug. Perfect for your morning brew or late-night coding sessions.
             </p>
             <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6">
+              <div className="mb-6">
+                <Image
+                  src="/ock-mug.png"
+                  alt="OCK Mug"
+                  width={300}
+                  height={300}
+                  className="mx-auto rounded-lg"
+                  priority
+                />
+              </div>
               <div className="mb-4">
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">1 USDC</div>
                 <div className="text-gray-500 dark:text-gray-400">≈ $1.00 USD</div>
