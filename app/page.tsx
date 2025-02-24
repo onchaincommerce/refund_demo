@@ -5,7 +5,7 @@ import { Checkout, CheckoutButton } from '@coinbase/onchainkit/checkout';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { RefundButton } from './components/RefundButton';
 
 interface Charge {
@@ -44,14 +44,7 @@ export default function ProductPage() {
   const [userCharges, setUserCharges] = useState<Charge[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch user's charges when they connect their wallet
-  useEffect(() => {
-    if (address) {
-      fetchUserCharges();
-    }
-  }, [address]);
-
-  const fetchUserCharges = async () => {
+  const fetchUserCharges = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch('/api/charges');
@@ -76,7 +69,14 @@ export default function ProductPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [address]);
+
+  // Fetch user's charges when they connect their wallet
+  useEffect(() => {
+    if (address) {
+      fetchUserCharges();
+    }
+  }, [address, fetchUserCharges]);
 
   const requestRefund = async (chargeId: string) => {
     try {

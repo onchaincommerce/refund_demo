@@ -115,7 +115,7 @@ export async function GET() {
     });
 
     // Sort charges by date (newest first)
-    const sortedCharges = data.data.sort((a: any, b: any) => {
+    const sortedCharges = data.data.sort((a: CommerceCharge, b: CommerceCharge) => {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
