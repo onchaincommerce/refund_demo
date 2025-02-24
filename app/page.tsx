@@ -50,17 +50,16 @@ export default function ProductPage() {
       const response = await fetch('/api/charges');
       if (response.ok) {
         const data = await response.json();
-        // Filter charges for the current user that are pending or completed
+        // Filter charges for the current user that have PENDING status
         const userCharges = data.data.filter((charge: Charge) => {
           // Check if the user's address is in payer_addresses
           const isUserCharge = charge.payer_addresses && 
             Object.values(charge.payer_addresses).includes(address?.toLowerCase() || '');
 
-          // Check if the charge has a valid status
-          const lastTimelineStatus = charge.timeline[charge.timeline.length - 1]?.status;
-          const isValidStatus = ['PENDING', 'COMPLETED'].includes(lastTimelineStatus);
+          // Check if the charge has PENDING status in timeline
+          const hasPendingStatus = charge.timeline.some(event => event.status === 'PENDING');
 
-          return isUserCharge && isValidStatus;
+          return isUserCharge && hasPendingStatus;
         });
         setUserCharges(userCharges);
       }
@@ -81,8 +80,8 @@ export default function ProductPage() {
   const requestRefund = async (chargeId: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/refund/request', {
-        method: 'POST',
+      const response = await fetch('/api/refund', {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -181,7 +180,7 @@ export default function ProductPage() {
                           <span className="px-3 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800">
                             Refund Requested
                           </span>
-                        ) : (
+                        ) : charge.timeline.some(event => event.status === 'PENDING') ? (
                           <button
                             onClick={() => requestRefund(charge.id)}
                             disabled={isLoading}
@@ -189,7 +188,7 @@ export default function ProductPage() {
                           >
                             {isLoading ? 'Processing...' : 'Request Refund'}
                           </button>
-                        )}
+                        ) : null}
                         {charge.metadata?.refund_tx && (
                           <a
                             href={`https://basescan.org/tx/${charge.metadata.refund_tx}`}
