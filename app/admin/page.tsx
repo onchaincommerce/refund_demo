@@ -359,25 +359,7 @@ export default function AdminPortal() {
                                   </a>
                                 )}
                               </div>
-                            ) : charge.metadata?.refund_requested ? (
-                              <div className="space-y-1">
-                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                  Refund Requested
-                                </span>
-                                <div className="text-xs text-gray-500">
-                                  {charge.metadata.refund_request_date && new Date(charge.metadata.refund_request_date).toLocaleDateString()}
-                                </div>
-                              </div>
                             ) : (
-                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                No Refund
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            {(status === 'COMPLETED' || status === 'PAYMENT_CONFIRMED') && 
-                             !charge.metadata?.refunded && 
-                             !charge.metadata?.refund_requested && (
                               <button
                                 onClick={() => handleRefund(charge.id)}
                                 className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"

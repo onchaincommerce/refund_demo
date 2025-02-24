@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
 import { useEffect, useState, useCallback } from 'react';
-import { RefundButton } from './components/RefundButton';
 
 interface Charge {
   id: string;
@@ -33,8 +32,6 @@ interface Charge {
     refunded?: boolean;
     refund_tx?: string;
     refund_date?: string;
-    refund_requested?: boolean;
-    refund_request_date?: string;
   };
   payer_addresses?: Record<string, string>;
 }
@@ -50,16 +47,10 @@ export default function ProductPage() {
       const response = await fetch('/api/charges');
       if (response.ok) {
         const data = await response.json();
-        // Filter charges for the current user that have PENDING status
+        // Filter charges for the current user
         const userCharges = data.data.filter((charge: Charge) => {
-          // Check if the user's address is in payer_addresses
-          const isUserCharge = charge.payer_addresses && 
+          return charge.payer_addresses && 
             Object.values(charge.payer_addresses).includes(address?.toLowerCase() || '');
-
-          // Check if the charge has PENDING status in timeline
-          const hasPendingStatus = charge.timeline.some(event => event.status === 'PENDING');
-
-          return isUserCharge && hasPendingStatus;
         });
         setUserCharges(userCharges);
       }
@@ -76,35 +67,6 @@ export default function ProductPage() {
       fetchUserCharges();
     }
   }, [address, fetchUserCharges]);
-
-  const requestRefund = async (chargeId: string) => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/refund', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          chargeId,
-          customerAddress: address,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to request refund');
-      }
-
-      // Refresh the charges list
-      await fetchUserCharges();
-    } catch (error) {
-      console.error('Error requesting refund:', error);
-      // You might want to show this error to the user
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -172,36 +134,26 @@ export default function ProductPage() {
                         </div>
                       </div>
                       <div className="flex flex-col items-end space-y-3">
-                        {charge.metadata?.refunded ? (
-                          <span className="px-3 py-1 text-sm font-medium rounded-full bg-purple-100 text-purple-800">
-                            Refunded
-                          </span>
-                        ) : charge.metadata?.refund_requested ? (
-                          <span className="px-3 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800">
-                            Refund Requested
-                          </span>
-                        ) : charge.timeline.some(event => event.status === 'PENDING') ? (
-                          <button
-                            onClick={() => requestRefund(charge.id)}
-                            disabled={isLoading}
-                            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                          >
-                            {isLoading ? 'Processing...' : 'Request Refund'}
-                          </button>
-                        ) : null}
-                        {charge.metadata?.refund_tx && (
-                          <a
-                            href={`https://basescan.org/tx/${charge.metadata.refund_tx}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                          >
-                            <span>View Transaction</span>
-                            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                              <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                              <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-                            </svg>
-                          </a>
+                        {charge.metadata?.refunded && (
+                          <>
+                            <span className="px-3 py-1 text-sm font-medium rounded-full bg-purple-100 text-purple-800">
+                              Refunded
+                            </span>
+                            {charge.metadata.refund_tx && (
+                              <a
+                                href={`https://basescan.org/tx/${charge.metadata.refund_tx}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                              >
+                                <span>View Transaction</span>
+                                <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                                  <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                                  <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                                </svg>
+                              </a>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>

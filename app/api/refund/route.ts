@@ -8,90 +8,6 @@ const USDC_ABI = [
   'function decimals() view returns (uint8)',
 ];
 
-// Customer endpoint to request a refund
-export async function PUT(request: Request) {
-  try {
-    const { chargeId, customerAddress } = await request.json();
-    console.log('Processing refund request:', { chargeId, customerAddress });
-
-    if (!chargeId || !customerAddress) {
-      return NextResponse.json({ 
-        error: 'Missing required fields' 
-      }, { status: 400 });
-    }
-
-    // Get the charge
-    const chargeResponse = await fetch(`${COINBASE_COMMERCE_API}/charges/${chargeId}`, {
-      headers: {
-        'X-CC-Api-Key': process.env.COINBASE_COMMERCE_API_KEY!,
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!chargeResponse.ok) {
-      const errorText = await chargeResponse.text();
-      console.error('Failed to fetch charge:', errorText);
-      return NextResponse.json({ error: 'Failed to fetch charge' }, { status: 404 });
-    }
-
-    const chargeData = await chargeResponse.json();
-    const charge = chargeData.data;
-
-    // Verify the charge has a PENDING status in timeline
-    const hasPendingStatus = charge.timeline.some((event: { status: string; time: string }) => event.status === 'PENDING');
-    if (!hasPendingStatus) {
-      return NextResponse.json({ error: 'Charge is not eligible for refund' }, { status: 400 });
-    }
-
-    // Check if already refunded or requested
-    if (charge.metadata?.refunded) {
-      return NextResponse.json({ error: 'Charge already refunded' }, { status: 400 });
-    }
-    if (charge.metadata?.refund_requested) {
-      return NextResponse.json({ error: 'Refund already requested' }, { status: 400 });
-    }
-
-    // Mark as refund requested
-    const updateResponse = await fetch(`${COINBASE_COMMERCE_API}/charges/${chargeId}`, {
-      method: 'POST',
-      headers: {
-        'X-CC-Api-Key': process.env.COINBASE_COMMERCE_API_KEY!,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        metadata: {
-          ...charge.metadata,
-          refund_requested: true,
-          refund_request_date: new Date().toISOString(),
-          refund_requested_by: customerAddress
-        },
-      }),
-    });
-
-    if (!updateResponse.ok) {
-      const errorText = await updateResponse.text();
-      console.error('Failed to update charge:', errorText);
-      return NextResponse.json({ error: 'Failed to update charge' }, { status: 500 });
-    }
-
-    const updatedCharge = await updateResponse.json();
-    console.log('Successfully marked charge for refund:', updatedCharge.data.id);
-
-    return NextResponse.json({
-      success: true,
-      message: 'Refund request submitted',
-      charge: updatedCharge.data
-    });
-
-  } catch (error) {
-    console.error('Error processing refund request:', error);
-    return NextResponse.json({ 
-      error: 'Failed to process refund request' 
-    }, { status: 500 });
-  }
-}
-
-// Merchant endpoint to process refunds
 export async function POST(request: Request) {
   try {
     const { chargeId } = await request.json();
@@ -124,25 +40,19 @@ export async function POST(request: Request) {
       metadata: charge.metadata
     });
 
-    // Verify this is a refund request
-    if (!charge.metadata?.refund_requested) {
-      return NextResponse.json({ error: 'No refund requested for this charge' }, { status: 400 });
-    }
-
     // Check if already refunded
     if (charge.metadata?.refunded) {
       return NextResponse.json({ error: 'Charge already refunded' }, { status: 400 });
     }
 
-    // Get payment details
+    // Get payment details and customer address
     const payment = charge.payments[0];
-    if (!payment || !payment.value.crypto.amount) {
-      return NextResponse.json({ error: 'Invalid payment data' }, { status: 400 });
+    if (!payment || !payment.value.crypto.amount || !payment.payer_addresses?.[0]) {
+      return NextResponse.json({ error: 'Invalid payment data or missing customer address' }, { status: 400 });
     }
 
-    // Get customer address from metadata
-    const customerAddress = charge.metadata.refund_requested_by;
-    if (!customerAddress || !ethers.isAddress(customerAddress)) {
+    const customerAddress = payment.payer_addresses[0];
+    if (!ethers.isAddress(customerAddress)) {
       return NextResponse.json({ error: 'Invalid customer address' }, { status: 400 });
     }
 
